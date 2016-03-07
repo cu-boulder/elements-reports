@@ -1,4 +1,6 @@
 /****** Find primary groups in Elements that do not have faculty members in FIS ******/
+create proc groupreconcile
+as
 SELECT count(u.[ID]) AS 'Num Faculty',
        g.[Primary Group Descriptor] AS 'Elements Primary Groups without faculty in FIS',
 	   gu.[Group ID]
@@ -109,3 +111,4 @@ SELECT COUNT( f.[ELEMENTS_PRIMARY_GROUP]) AS 'Num Faculty',
 	   'Advertising, Public Relations and Media Design')
  GROUP BY f.[ELEMENTS_PRIMARY_GROUP]
  ORDER BY f.[ELEMENTS_PRIMARY_GROUP];
+ go
