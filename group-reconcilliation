@@ -1,0 +1,111 @@
+/****** Find primary groups in Elements that do not have faculty members in FIS ******/
+SELECT count(u.[ID]) AS 'Num Faculty',
+       g.[Primary Group Descriptor] AS 'Elements Primary Groups without faculty in FIS',
+	   gu.[Group ID]
+  FROM [elements-reporting].[dbo].[Group] g,
+       [elements-reporting].[dbo].[Group User Membership] gu,
+	   [elements-reporting].[dbo].[User] u
+ WHERE g.ID = gu.[Group ID]
+   AND gu.[User ID] = u.ID
+   AND u.[Is Current Staff] = '1'
+   AND g.[Type] collate database_default = 'Primary'
+   AND g.[Primary Group Descriptor] collate database_default NOT IN (
+		SELECT DISTINCT f.[ELEMENTS_PRIMARY_GROUP]
+		  FROM "LAON"..FACULTY.ELEMENTS_HR_FEED_VIEW f
+      )
+ GROUP BY gu.[Group ID], g.[Primary Group Descriptor]
+ ORDER BY g.[Primary Group Descriptor];
+
+ /****** Find primary groups in FIS that are not in Elements ******/
+SELECT COUNT( f.[ELEMENTS_PRIMARY_GROUP]) AS 'Num Faculty',
+       f.[ELEMENTS_PRIMARY_GROUP]  AS 'FIS Primary Groups not in Elements'       
+  FROM "LAON"..FACULTY.ELEMENTS_HR_FEED_VIEW f
+ WHERE LTRIM(RTRIM(f.[ELEMENTS_PRIMARY_GROUP])) collate database_default NOT IN (
+		SELECT DISTINCT LTRIM(RTRIM(g.[Primary Group Descriptor]))
+		  FROM [elements-reporting].[dbo].[Group] g
+		 WHERE g.[Type] = 'Primary'
+      )
+ GROUP BY f.[ELEMENTS_PRIMARY_GROUP]
+ ORDER BY f.[ELEMENTS_PRIMARY_GROUP];
+
+
+ /****** Find primary groups in Elements with Extra or Missing Spaces ******/
+SELECT COUNT( f.[ELEMENTS_PRIMARY_GROUP]) AS 'Num Faculty',
+       f.[ELEMENTS_PRIMARY_GROUP]  AS 'Elements Primary Groups With Extra or Missing Spaces)'
+  FROM "LAON"..FACULTY.ELEMENTS_HR_FEED_VIEW f
+ WHERE f.[ELEMENTS_PRIMARY_GROUP] collate database_default NOT IN (
+		SELECT DISTINCT g.[Primary Group Descriptor]
+		  FROM [elements-reporting].[dbo].[Group] g
+		 WHERE g.[Type] = 'Primary'
+      )
+  AND f.[ELEMENTS_PRIMARY_GROUP] NOT IN (
+SELECT DISTINCT h.[ELEMENTS_PRIMARY_GROUP]  AS 'FIS Primary Groups not in Elements'
+  FROM "LAON"..FACULTY.ELEMENTS_HR_FEED_VIEW h
+ WHERE LTRIM(RTRIM(h.[ELEMENTS_PRIMARY_GROUP])) collate database_default NOT IN (
+		SELECT DISTINCT LTRIM(RTRIM(i.[Primary Group Descriptor]))
+		  FROM [elements-reporting].[dbo].[Group] i
+		 WHERE i.[Type] = 'Primary'
+      )
+ )
+ GROUP BY f.[ELEMENTS_PRIMARY_GROUP]
+ ORDER BY f.[ELEMENTS_PRIMARY_GROUP];
+
+ /****** Show primary groups and number of members in Elements ******/
+SELECT count(u.[ID]) AS 'Num Faculty',
+       g.[Primary Group Descriptor] AS 'Primary Groups - Elements',
+       gu.[Group ID]
+  FROM [elements-reporting].[dbo].[Group] g,
+       [elements-reporting].[dbo].[Group User Membership] gu,
+	   [elements-reporting].[dbo].[User] u
+ WHERE g.ID = gu.[Group ID]
+   AND gu.[User ID] = u.ID
+   AND u.[Is Current Staff] = '1'
+   AND g.[Type] collate database_default = 'Primary'
+ GROUP BY gu.[Group ID], g.[Primary Group Descriptor]
+ ORDER BY g.[Primary Group Descriptor];
+
+  /****** Show primary groups and number of members in FIS ******/
+SELECT COUNT( f.[ELEMENTS_PRIMARY_GROUP]) AS 'Num Faculty',
+       f.[ELEMENTS_PRIMARY_GROUP]  AS 'Primary Groups - FIS)'
+  FROM "LAON"..FACULTY.ELEMENTS_HR_FEED_VIEW f
+ GROUP BY f.[ELEMENTS_PRIMARY_GROUP]
+ ORDER BY f.[ELEMENTS_PRIMARY_GROUP];
+
+ /****** Show primary groups and number of members in Elements for CMCI ******/
+SELECT count(u.[ID]) AS 'Num Faculty',
+       g.[Primary Group Descriptor] AS 'Primary Groups - Elements - CMCI',
+       gu.[Group ID]
+  FROM [elements-reporting].[dbo].[Group] g,
+       [elements-reporting].[dbo].[Group User Membership] gu,
+	   [elements-reporting].[dbo].[User] u
+ WHERE g.ID = gu.[Group ID]
+   AND gu.[User ID] = u.ID
+   AND u.[Is Current Staff] = '1'
+   AND g.[Type] collate database_default = 'Primary'
+   AND g.[Primary Group Descriptor] IN (
+       'Communication',
+	   'College of Media, Communication & Information',
+	   'Media Studies',
+	   'Information Science',
+	   'Intermedia Art, Writing and Performance',
+	   'Journalism',
+	   'Critical Media Practices',
+	   'Advertising, Public Relations and Media Design')
+ GROUP BY gu.[Group ID], g.[Primary Group Descriptor]
+ ORDER BY g.[Primary Group Descriptor];
+
+  /****** Show primary groups and number of members in FIS for CMCI ******/
+SELECT COUNT( f.[ELEMENTS_PRIMARY_GROUP]) AS 'Num Faculty',
+       f.[ELEMENTS_PRIMARY_GROUP]  AS 'Primary Groups - FIS - CMCI)'
+  FROM "LAON"..FACULTY.ELEMENTS_HR_FEED_VIEW f
+ WHERE f.[ELEMENTS_PRIMARY_GROUP] IN (
+       'Communication',
+	   'College of Media, Communication & Information',
+	   'Media Studies',
+	   'Information Science',
+	   'Intermedia Art, Writing and Performance',
+	   'Journalism',
+	   'Critical Media Practices',
+	   'Advertising, Public Relations and Media Design')
+ GROUP BY f.[ELEMENTS_PRIMARY_GROUP]
+ ORDER BY f.[ELEMENTS_PRIMARY_GROUP];
