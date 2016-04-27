@@ -1,0 +1,25 @@
+select x.[Proprietary ID], x.[Last Name], x.[Source Name], x.[Publication ID], 
+x.[Publication date], y.[Proprietary ID], y.[Last Name], y.[Source Name], y.[Publication ID], 
+y.[Publication date]
+from
+(select u.[Proprietary ID], u.[Last Name], uso.[Source Name], pr.[Publication ID], 
+pr.[Publication date], u.ID
+from 
+[elements-test-reporting]..[User] u, [elements-test-reporting]..[User Search Term Overrides] uso, 
+[elements-test-reporting]..[Publication User Relationship] pu,
+[elements-test-reporting]..[Publication Record (Field Display Names)] pr
+where u.[Is Academic] = 1 and u.[Is Current Staff] = 1 and u.[Is Local] = 0
+and uso.[User ID] = u.ID and uso.[Source ID] = 11
+and pu.[User ID] = u.ID and pr.[Publication ID] = pu.[Publication ID]) x
+full join
+(select u.[Proprietary ID], u.[Last Name], uso.[Source Name], pr.[Publication ID], 
+pr.[Publication date], u.ID
+from 
+[elements-test-reporting]..[User] u, [elements-test-reporting]..[User Search Term Overrides] uso, 
+[elements-test-reporting]..[Publication User Relationship] pu,
+[elements-test-reporting]..[Publication Record (Field Display Names)] pr
+where u.[Is Academic] = 1 and u.[Is Current Staff] = 1 and u.[Is Local] = 0
+and uso.[User ID] = u.ID and uso.[Source ID] = 11
+and pu.[User ID] = u.ID and pr.[Publication ID] = pu.[Publication ID]) y
+on
+x.ID = y.ID and x.[Publication ID] = y.[Publication ID]
