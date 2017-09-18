@@ -1,0 +1,5 @@
+SELECT TOP 100 pr.[Publication ID], COUNT (*) 
+from [Publication Record Person] prp, [Publication User Relationship] pu, [Publication Record] pr
+where prp.[Publication Record ID] = pr.ID AND pu.[Publication ID]=pr.[Publication ID]
+GROUP BY pr.[Publication ID]
+ORDER BY 2 desc
