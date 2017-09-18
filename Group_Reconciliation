@@ -1,0 +1,7 @@
+select g.Name, g.ID, g.Type, g.[Primary Group Descriptor], g.[Parent Group ID], u.[Proprietary ID], u.[Last First Name], gu.[Is Explicit] from [Group User Membership] gu, [User] u, [Group] g 
+where u.ID = gu.[User ID] and g.ID = gu.[Group ID]
+and u.[Is Current Staff] = 1 and u.[Is Local] = 0
+-- and g.Type = 'Auto'
+--AND g.[Type] collate database_default = 'Primary'
+--and gu.[Is Explicit] = 1
+order by 6,1
