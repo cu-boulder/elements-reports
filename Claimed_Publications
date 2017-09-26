@@ -1,0 +1,6 @@
+select ID, Title, Abstract, DOI, [Data Source], Type, [Publication date], Authors, [ISSN], [eISSN], [Journal]
+from [Publication (Field Display Names)] 
+where
+   ID in (select [Publication ID] from [Publication User Relationship])
+   and Type in ('Book','Chapter','Journal article','Scholarly edition','Conference Proceeding')
+   
