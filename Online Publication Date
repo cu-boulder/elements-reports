@@ -1,0 +1,3 @@
+select type, count(*) from [Publication (Field Display Names)] 
+where [Online publication date] is not null
+group by Type
