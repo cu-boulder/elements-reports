@@ -214,6 +214,7 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                   <TextAlign>Left</TextAlign>
                   <LineHeight>1pt</LineHeight>
                 </Style>
+		      </Paragraphs>
               </Paragraphs>
             <Top>0.03528cm</Top>
             <Left>0cm</Left>
