@@ -921,6 +921,7 @@ Faculty Information System (FIS)</Value>
                     <TextAlign>Right</TextAlign>
                   </Style>
                 </Paragraph>
+	     </Paragraphs>
               <rd:DefaultName>Textbox3</rd:DefaultName>
               <Top>0.10583cm</Top>
               <Left>22.87935cm</Left>
