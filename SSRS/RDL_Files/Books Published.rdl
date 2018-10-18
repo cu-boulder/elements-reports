@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Report xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:cl="http://schemas.microsoft.com/sqlserver/reporting/2010/01/componentdefinition" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2010/01/reportdefinition">
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:cl="http://schemas.microsoft.com/sqlserver/reporting/2010/01/componentdefinition">
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
     <DataSource Name="ElementsReporting">
-      <DataSourceReference>/elements/Data Sources/ElementsReporting</DataSourceReference>
+      <DataSourceReference>/Elements-510/Data Sources/ElementsReporting</DataSourceReference>
       <rd:SecurityType>None</rd:SecurityType>
       <rd:DataSourceID>99046a7d-8c91-4647-847c-b96cd430087f</rd:DataSourceID>
     </DataSource>
@@ -16,6 +16,9 @@
           <QueryParameter Name="@Date_1">
             <Value>=Parameters!Date_1.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@Group_ID">
+            <Value>=Parameters!Group_ID.Value</Value>
+          </QueryParameter>
           <QueryParameter Name="@Date_2">
             <Value>=Parameters!Date_2.Value</Value>
           </QueryParameter>
@@ -25,30 +28,33 @@ DECLARE @URL VARCHAR(500);
 SELECT @URL = G.[Website Base URL] FROM [Global Settings] G;
 --SET THE PUBLICATION TYPE ID
 DECLARE @publicationTypeID VARCHAR(100);
-SELECT @publicationTypeID = t.id FROM [Publication Type]  T WHERE T.[Identifier name]='book'
+SELECT @publicationTypeID = T.ID FROM [Publication Type]  T WHERE T.[Identifier name]='book'
 
 SELECT  CONCAT(U.[Last Name] + ', ', U.[First Name]) Full_Name,
-		@URL + 'userprofile.html?uid=' + CAST(u.ID AS VARCHAR) User_URL,
+		@URL + 'userprofile.html?uid=' + CAST(U.ID AS VARCHAR) User_URL,
 		U.[Home Department],
 		U.[Tenure Locus],
 		@URL + 'viewobject.html?cid=1&amp;id=' + CAST(P.ID AS VARCHAR) Publication_URL,
-		P.[APA6 HTML Citation],
+		REPLACE(P.[APA6 HTML Citation],'padding-left:0.5in;','') [APA6 HTML Citation],
 		P.publisher,
-		P.[publication-date],
+		SUBSTRING(CAST(P.[publication-date] AS VARCHAR),0,5) [publication-date],
 		P.[isbn-13],
-		P.[isbn-10]
-FROM [User] u
-JOIN [Publication User Relationship] pur 
-	ON u.[ID] = pur.[User ID]
-INNER JOIN [Publication] p 
-	ON pur.[Publication ID] = p.ID
+		G.Name [Group Name]
+FROM [Group] G
+INNER JOIN [Group User Membership] M
+	ON G.ID = M.[Group ID] AND G.ID = @Group_ID
+INNER JOIN [User] U
+	ON U.ID = M.[User ID] 
+INNER JOIN [Publication User Relationship] PUR 
+	ON U.[ID] = PUR.[User ID]
+INNER JOIN [Publication] P 
+	ON PUR.[Publication ID] = P.ID
 INNER JOIN [Publication Type] pubType 
-	ON p.[Type ID] = pubType.ID
-WHERE P.[Type ID] = @publicationTypeID
-AND [SymplecticReports].fy_REPORT_CheckDateInRange(
+	ON P.[Type ID] = pubType.ID AND P.[Type ID] = @publicationTypeID
+WHERE [SymplecticReports].fy_REPORT_CheckDateInRange(
 	CAST(pubType.[Uses Reporting Date 1] AS INT) + CAST(pubType.[Uses Reporting Date 2] AS INT),
-	p.[Reporting Date 1], p.[Reporting Date 2], @Date_1, @Date_2) = CAST(1 AS BIT)
-ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
+	P.[Reporting Date 1], P.[Reporting Date 2], @Date_1, @Date_2) = CAST(1 AS BIT)
+ORDER BY 1</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
       <Fields>
@@ -82,14 +88,14 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
         </Field>
         <Field Name="publication_date">
           <DataField>publication-date</DataField>
-          <rd:TypeName>System.Int32</rd:TypeName>
+          <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="isbn_13">
           <DataField>isbn-13</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="isbn_10">
-          <DataField>isbn-10</DataField>
+        <Field Name="Group_Name">
+          <DataField>Group Name</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
@@ -109,7 +115,6 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                     <Value>Books Published</Value>
                     <Style>
                       <FontStyle>Normal</FontStyle>
-                      <FontFamily>Helvetica Neue</FontFamily>
                       <FontSize>18pt</FontSize>
                       <FontWeight>Bold</FontWeight>
                       <TextDecoration>None</TextDecoration>
@@ -125,9 +130,34 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                     <Value />
                     <Style>
                       <FontStyle>Normal</FontStyle>
-                      <FontFamily>Helvetica Neue</FontFamily>
                       <FontSize>16pt</FontSize>
                       <FontWeight>Bold</FontWeight>
+                      <TextDecoration>None</TextDecoration>
+                      <Color>#000000</Color>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style />
+              </Paragraph>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>Group Name: </Value>
+                    <Style>
+                      <FontStyle>Normal</FontStyle>
+                      <FontSize>14pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                      <TextDecoration>None</TextDecoration>
+                      <Color>#000000</Color>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Label>GroupName</Label>
+                    <Value>=First(Fields!Group_Name.Value, "PublishedBooks")</Value>
+                    <Style>
+                      <FontStyle>Normal</FontStyle>
+                      <FontSize>14pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
                       <TextDecoration>None</TextDecoration>
                       <Color>#000000</Color>
                     </Style>
@@ -141,7 +171,6 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                     <Value>Reporting Date</Value>
                     <Style>
                       <FontStyle>Normal</FontStyle>
-                      <FontFamily>Browallia New</FontFamily>
                       <FontSize>14pt</FontSize>
                       <FontWeight>Bold</FontWeight>
                       <TextDecoration>None</TextDecoration>
@@ -152,7 +181,6 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                     <Value>: </Value>
                     <Style>
                       <FontStyle>Normal</FontStyle>
-                      <FontFamily>Browallia New</FontFamily>
                       <FontSize>14pt</FontSize>
                       <FontWeight>Normal</FontWeight>
                       <TextDecoration>None</TextDecoration>
@@ -163,10 +191,9 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                     <Value>=Globals!ExecutionTime</Value>
                     <Style>
                       <FontStyle>Normal</FontStyle>
-                      <FontFamily>Browallia New</FontFamily>
                       <FontSize>14pt</FontSize>
                       <FontWeight>Normal</FontWeight>
-                      <Format>d/MM/yyyy</Format>
+                      <Format>MM/d/yyyy</Format>
                       <TextDecoration>None</TextDecoration>
                       <Color>#000000</Color>
                     </Style>
@@ -180,7 +207,6 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                     <Value>Reporting Period</Value>
                     <Style>
                       <FontStyle>Normal</FontStyle>
-                      <FontFamily>Browallia New</FontFamily>
                       <FontSize>14pt</FontSize>
                       <FontWeight>Bold</FontWeight>
                       <TextDecoration>None</TextDecoration>
@@ -191,7 +217,6 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                     <Value>: </Value>
                     <Style>
                       <FontStyle>Normal</FontStyle>
-                      <FontFamily>Browallia New</FontFamily>
                       <FontSize>14pt</FontSize>
                       <FontWeight>Normal</FontWeight>
                       <TextDecoration>None</TextDecoration>
@@ -199,12 +224,33 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                     </Style>
                   </TextRun>
                   <TextRun>
-                    <Value>=Parameters!Date_1.Value+" - "+Parameters!Date_2.Value</Value>
+                    <Value>=Parameters!Date_1.Value</Value>
                     <Style>
                       <FontStyle>Normal</FontStyle>
-                      <FontFamily>Browallia New</FontFamily>
                       <FontSize>14pt</FontSize>
                       <FontWeight>Normal</FontWeight>
+                      <Format>MM/d/yyyy</Format>
+                      <TextDecoration>None</TextDecoration>
+                      <Color>#000000</Color>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value> - </Value>
+                    <Style>
+                      <FontStyle>Normal</FontStyle>
+                      <FontSize>14pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                      <TextDecoration>None</TextDecoration>
+                      <Color>#000000</Color>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>=Parameters!Date_2.Value</Value>
+                    <Style>
+                      <FontStyle>Normal</FontStyle>
+                      <FontSize>14pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                      <Format>MM/d/yyyy</Format>
                       <TextDecoration>None</TextDecoration>
                       <Color>#000000</Color>
                     </Style>
@@ -214,12 +260,12 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                   <TextAlign>Left</TextAlign>
                   <LineHeight>1pt</LineHeight>
                 </Style>
-		      </Paragraphs>
-              </Paragraphs>
+              </Paragraph>
+            </Paragraphs>
             <Top>0.03528cm</Top>
-            <Left>0cm</Left>
-            <Height>2.83308cm</Height>
-            <Width>8.51644cm</Width>
+            <Left>0.07368cm</Left>
+            <Height>3.44691cm</Height>
+            <Width>10.99294cm</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -237,22 +283,22 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                   <Width>3.48137cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>3.93934cm</Width>
+                  <Width>2.88101cm</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>2.83866cm</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>9.40033cm</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>3.66184cm</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>2.90217cm</Width>
-                </TablixColumn>
-                <TablixColumn>
                   <Width>2.5cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>7.8975cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>3.34434cm</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>3.28317cm</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -270,7 +316,6 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                                 <TextRun>
                                   <Value>Author Name</Value>
                                   <Style>
-                                    <FontFamily>cambria</FontFamily>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
@@ -307,7 +352,6 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                                 <TextRun>
                                   <Value>Home Department</Value>
                                   <Style>
-                                    <FontFamily>cambria</FontFamily>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
@@ -341,7 +385,6 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                                 <TextRun>
                                   <Value>Tenure </Value>
                                   <Style>
-                                    <FontFamily>cambria</FontFamily>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
@@ -355,7 +398,6 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                                 <TextRun>
                                   <Value>Locus</Value>
                                   <Style>
-                                    <FontFamily>cambria</FontFamily>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
@@ -380,6 +422,39 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
+                        <Textbox Name="Textbox29">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Year</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox29</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>#cfb87c</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>#ededed</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingBottom>5pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
                         <Textbox Name="Textbox5">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
@@ -389,7 +464,6 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                                 <TextRun>
                                   <Value>Book Citation</Value>
                                   <Style>
-                                    <FontFamily>cambria</FontFamily>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
@@ -423,7 +497,6 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                                 <TextRun>
                                   <Value>Publisher</Value>
                                   <Style>
-                                    <FontFamily>cambria</FontFamily>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
@@ -457,7 +530,6 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                                 <TextRun>
                                   <Value>ISBN 13</Value>
                                   <Style>
-                                    <FontFamily>cambria</FontFamily>
                                     <FontWeight>Bold</FontWeight>
                                   </Style>
                                 </TextRun>
@@ -468,40 +540,6 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>Textbox10</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>#cfb87c</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <BackgroundColor>#ededed</BackgroundColor>
-                            <VerticalAlign>Middle</VerticalAlign>
-                            <PaddingBottom>5pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox13">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>ISBN 10</Value>
-                                  <Style>
-                                    <FontFamily>cambria</FontFamily>
-                                    <FontWeight>Bold</FontWeight>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox13</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#cfb87c</Color>
@@ -537,9 +575,7 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                                     </Actions>
                                   </ActionInfo>
                                   <MarkupType>HTML</MarkupType>
-                                  <Style>
-                                    <FontFamily>cambria</FontFamily>
-                                  </Style>
+                                  <Style />
                                 </TextRun>
                               </TextRuns>
                               <Style>
@@ -572,9 +608,7 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                                 <TextRun>
                                   <Label>Home_Department</Label>
                                   <Value>=IIF(ISNOTHING(Fields!Home_Department.Value),"-",Fields!Home_Department.Value)</Value>
-                                  <Style>
-                                    <FontFamily>cambria</FontFamily>
-                                  </Style>
+                                  <Style />
                                 </TextRun>
                               </TextRuns>
                               <Style>
@@ -607,9 +641,7 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                                 <TextRun>
                                   <Label>Tenure_Locus</Label>
                                   <Value>=IIF(ISNOTHING(Fields!Tenure_Locus.Value),"-",Fields!Tenure_Locus.Value)</Value>
-                                  <Style>
-                                    <FontFamily>cambria</FontFamily>
-                                  </Style>
+                                  <Style />
                                 </TextRun>
                               </TextRuns>
                               <Style>
@@ -617,6 +649,40 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                               </Style>
                             </Paragraph>
                           </Paragraphs>
+                          <Style>
+                            <Border>
+                              <Color>#cfb87c</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>5pt</PaddingLeft>
+                            <PaddingRight>5pt</PaddingRight>
+                            <PaddingTop>5pt</PaddingTop>
+                            <PaddingBottom>5pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="publication_date">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Label>publication_date</Label>
+                                  <Value>=Fields!publication_date.Value</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>publication_date</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#cfb87c</Color>
@@ -649,9 +715,7 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                                     </Actions>
                                   </ActionInfo>
                                   <MarkupType>HTML</MarkupType>
-                                  <Style>
-                                    <FontFamily>cambria</FontFamily>
-                                  </Style>
+                                  <Style />
                                 </TextRun>
                               </TextRuns>
                               <Style>
@@ -684,9 +748,7 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                                 <TextRun>
                                   <Label>Publisher</Label>
                                   <Value>=IIF(ISNOTHING(Fields!publisher.Value),"-",Fields!publisher.Value)</Value>
-                                  <Style>
-                                    <FontFamily>cambria</FontFamily>
-                                  </Style>
+                                  <Style />
                                 </TextRun>
                               </TextRuns>
                               <Style>
@@ -720,9 +782,7 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                                 <TextRun>
                                   <Label>ISBN13</Label>
                                   <Value>=IIF(ISNOTHING(Fields!isbn_13.Value),"-",Fields!isbn_13.Value)</Value>
-                                  <Style>
-                                    <FontFamily>cambria</FontFamily>
-                                  </Style>
+                                  <Style />
                                 </TextRun>
                               </TextRuns>
                               <Style>
@@ -731,42 +791,6 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                             </Paragraph>
                           </Paragraphs>
                           <rd:DefaultName>isbn_13</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>#cfb87c</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <VerticalAlign>Middle</VerticalAlign>
-                            <PaddingLeft>5pt</PaddingLeft>
-                            <PaddingRight>5pt</PaddingRight>
-                            <PaddingTop>5pt</PaddingTop>
-                            <PaddingBottom>5pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="isbn_10">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Label>ISBN10</Label>
-                                  <Value>=IIF(ISNOTHING(Fields!isbn_10.Value),"-",Fields!isbn_10.Value)</Value>
-                                  <Style>
-                                    <FontFamily>cambria</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style>
-                                <TextAlign>Center</TextAlign>
-                              </Style>
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>isbn_10</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>#cfb87c</Color>
@@ -807,25 +831,39 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>PublishedBooks</DataSetName>
-            <Top>3.34454cm</Top>
+            <SortExpressions>
+              <SortExpression>
+                <Value>=Fields!Full_Name.Value</Value>
+              </SortExpression>
+              <SortExpression>
+                <Value>=Fields!publication_date.Value</Value>
+                <Direction>Descending</Direction>
+              </SortExpression>
+            </SortExpressions>
+            <Top>4.04304cm</Top>
             <Left>0cm</Left>
             <Height>2.51763cm</Height>
-            <Width>28.72371cm</Width>
+            <Width>26.22605cm</Width>
             <ZIndex>1</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
               </Border>
             </Style>
+            <cl:ComponentMetadata>
+              <cl:ComponentId>5eb8f4ec-44d9-471e-b5e5-3fae5654e814</cl:ComponentId>
+              <cl:SourcePath>/Report Parts/Tablix2</cl:SourcePath>
+              <cl:SyncDate>2018-10-16T11:26:58.4241599-06:00</cl:SyncDate>
+            </cl:ComponentMetadata>
           </Tablix>
         </ReportItems>
-        <Height>7.9177cm</Height>
+        <Height>18cm</Height>
         <Style />
       </Body>
-      <Width>28.72371cm</Width>
+      <Width>26.39772cm</Width>
       <Page>
         <PageHeader>
-          <Height>2.01153cm</Height>
+          <Height>1.79986cm</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
@@ -833,9 +871,9 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
               <Source>Embedded</Source>
               <Value>BoulderFL</Value>
               <Sizing>FitProportional</Sizing>
-              <Top>0.03528cm</Top>
-              <Left>24.47795cm</Left>
-              <Height>1.97625cm</Height>
+              <Top>0cm</Top>
+              <Left>21.60396cm</Left>
+              <Height>1.79986cm</Height>
               <Width>3.98708cm</Width>
               <Style>
                 <Border>
@@ -860,8 +898,8 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
               <Source>Embedded</Source>
               <Value>CUBEgoldboxnowhitespace</Value>
               <Sizing>FitProportional</Sizing>
-              <Top>0.03526cm</Top>
-              <Left>0.07368cm</Left>
+              <Top>0.4586cm</Top>
+              <Left>0.36472cm</Left>
               <Height>1.5cm</Height>
               <Width>1.5cm</Width>
               <Style>
@@ -869,6 +907,11 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
                   <Style>None</Style>
                 </Border>
               </Style>
+              <cl:ComponentMetadata>
+                <cl:ComponentId>6e34a479-63ec-4afc-a656-2376ca237cd4</cl:ComponentId>
+                <cl:SourcePath>/Report Parts/Image2</cl:SourcePath>
+                <cl:SyncDate>2018-10-16T11:26:59.7003505-06:00</cl:SyncDate>
+              </cl:ComponentMetadata>
             </Image>
             <Textbox Name="Textbox3">
               <CanGrow>true</CanGrow>
@@ -881,7 +924,6 @@ ORDER BY P.[isbn-13],P.[isbn-10]</CommandText>
 Faculty Information System (FIS)</Value>
                       <Style>
                         <FontStyle>Italic</FontStyle>
-                        <FontFamily>Calibri</FontFamily>
                         <FontSize>9pt</FontSize>
                         <FontWeight>Normal</FontWeight>
                         <TextDecoration>None</TextDecoration>
@@ -893,8 +935,7 @@ Faculty Information System (FIS)</Value>
                     <TextAlign>Right</TextAlign>
                   </Style>
                 </Paragraph>
-              </Paragraphs>
-		     <Paragraph>
+                <Paragraph>
                   <TextRuns>
                     <TextRun>
                       <Value>="Page "&amp;Globals!PageNumber &amp;" of "&amp;Globals!TotalPages</Value>
@@ -921,18 +962,18 @@ Faculty Information System (FIS)</Value>
                     <TextAlign>Right</TextAlign>
                   </Style>
                 </Paragraph>
-	     </Paragraphs>
+              </Paragraphs>
               <rd:DefaultName>Textbox3</rd:DefaultName>
-              <Top>0.10583cm</Top>
-              <Left>22.87935cm</Left>
+              <Top>0.07056cm</Top>
+              <Left>19.59854cm</Left>
               <Height>1.5cm</Height>
-              <Width>5.58568cm</Width>
+              <Width>5.9925cm</Width>
               <ZIndex>1</ZIndex>
               <Style>
                 <Border>
                   <Style>None</Style>
                 </Border>
-                <VerticalAlign>Bottom</VerticalAlign>
+                <VerticalAlign>Top</VerticalAlign>
                 <PaddingLeft>2pt</PaddingLeft>
                 <PaddingRight>2pt</PaddingRight>
                 <PaddingTop>2pt</PaddingTop>
@@ -946,8 +987,8 @@ Faculty Information System (FIS)</Value>
             </Border>
           </Style>
         </PageFooter>
-        <PageHeight>29.7cm</PageHeight>
-        <PageWidth>21cm</PageWidth>
+        <PageHeight>21.59cm</PageHeight>
+        <PageWidth>27.94cm</PageWidth>
         <LeftMargin>1.5cm</LeftMargin>
         <RightMargin>1.5cm</RightMargin>
         <TopMargin>1.5cm</TopMargin>
@@ -983,6 +1024,29 @@ Faculty Information System (FIS)</Value>
       <Prompt>Group_ID</Prompt>
     </ReportParameter>
   </ReportParameters>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>2</NumberOfColumns>
+      <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>Date_1</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>Date_2</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>Group_ID</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
   <Code>
 		''' &lt;summary&gt;
 		''' Prepends and appends the input with a prefix and suffix (respectively) if the input is not blank or empty.
@@ -1310,6 +1374,6 @@ A8qMtJSfrF6wctVTNx5wI1K3NOvUolqhICVdU6Z3/lxUVFQwvL2HnZ83MC211yefNre0tLW0tkklsD3y
   <Language>en-US</Language>
   <ConsumeContainerWhitespace>true</ConsumeContainerWhitespace>
   <rd:ReportUnitType>Cm</rd:ReportUnitType>
-  <rd:ReportServerUrl>https://localhost/ReportServer</rd:ReportServerUrl>
+  <rd:ReportServerUrl>https://fis-reporter.colorado.edu/ReportServer_ELEMENTS_DEV</rd:ReportServerUrl>
   <rd:ReportID>68b055ca-ea1e-49e2-a1ff-6d28e8649b28</rd:ReportID>
 </Report>
