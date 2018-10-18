@@ -248,7 +248,6 @@ ORDER BY AVG(p.[Citation Count]) DESC)
 SELECT
 [Title],
 [First Name],
-[Initials],
 [Last Name],
 (SELECT COUNT(1) FROM [Publication User Relationship] WHERE [User ID] = u.ID) AS [Publication Count],
 hcu.[Average Citation Count],
@@ -263,10 +262,6 @@ FROM [Highly Cited Users] hcu JOIN [User] u ON hcu.[User ID] = u.ID</CommandText
         </Field>
         <Field Name="First_Name">
           <DataField>First Name</DataField>
-          <rd:TypeName>System.String</rd:TypeName>
-        </Field>
-        <Field Name="Initials">
-          <DataField>Initials</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
         <Field Name="Last_Name">
@@ -1692,7 +1687,7 @@ FROM [Highly Cited Users] hcu JOIN [User] u ON hcu.[User ID] = u.ID</CommandText
               <Top>0.03526cm</Top>
               <Left>0.07368cm</Left>
               <Height>1.5cm</Height>
-              <Width>2.135cm</Width>
+              <Width>1.5cm</Width>
               <Style>
                 <Border>
                   <Style>None</Style>
@@ -1711,6 +1706,33 @@ Faculty Information System (FIS)</Value>
                       <Style>
                         <FontStyle>Italic</FontStyle>
                         <FontFamily>Calibri</FontFamily>
+                        <FontSize>9pt</FontSize>
+                        <FontWeight>Normal</FontWeight>
+                        <TextDecoration>None</TextDecoration>
+                        <Color>#000000</Color>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Right</TextAlign>
+                  </Style>
+                </Paragraph>
+		      <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>="Page "&amp;Globals!PageNumber &amp;" of "&amp;Globals!TotalPages</Value>
+                      <Style>
+                        <FontStyle>Italic</FontStyle>
+                        <FontSize>9pt</FontSize>
+                        <FontWeight>Normal</FontWeight>
+                        <TextDecoration>None</TextDecoration>
+                        <Color>#000000</Color>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value xml:space="preserve"> </Value>
+                      <Style>
+                        <FontStyle>Italic</FontStyle>
                         <FontSize>9pt</FontSize>
                         <FontWeight>Normal</FontWeight>
                         <TextDecoration>None</TextDecoration>
@@ -1747,12 +1769,12 @@ Faculty Information System (FIS)</Value>
             </Border>
           </Style>
         </PageFooter>
-        <PageHeight>29.7cm</PageHeight>
-        <PageWidth>21cm</PageWidth>
-        <LeftMargin>2.5cm</LeftMargin>
-        <RightMargin>2.5cm</RightMargin>
-        <TopMargin>2.5cm</TopMargin>
-        <BottomMargin>2.5cm</BottomMargin>
+        <PageHeight>27.94cm</PageHeight>
+        <PageWidth>21.59cm</PageWidth>
+        <LeftMargin>1.5cm</LeftMargin>
+        <RightMargin>1.5cm</RightMargin>
+        <TopMargin>1.5cm</TopMargin>
+        <BottomMargin>1.5cm</BottomMargin>
         <ColumnSpacing>1.27cm</ColumnSpacing>
         <Style />
       </Page>
