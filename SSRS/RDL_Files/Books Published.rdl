@@ -894,6 +894,33 @@ Faculty Information System (FIS)</Value>
                   </Style>
                 </Paragraph>
               </Paragraphs>
+		     <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>="Page "&amp;Globals!PageNumber &amp;" of "&amp;Globals!TotalPages</Value>
+                      <Style>
+                        <FontStyle>Italic</FontStyle>
+                        <FontSize>9pt</FontSize>
+                        <FontWeight>Normal</FontWeight>
+                        <TextDecoration>None</TextDecoration>
+                        <Color>#000000</Color>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value xml:space="preserve"> </Value>
+                      <Style>
+                        <FontStyle>Italic</FontStyle>
+                        <FontSize>9pt</FontSize>
+                        <FontWeight>Normal</FontWeight>
+                        <TextDecoration>None</TextDecoration>
+                        <Color>#000000</Color>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Right</TextAlign>
+                  </Style>
+                </Paragraph>
               <rd:DefaultName>Textbox3</rd:DefaultName>
               <Top>0.10583cm</Top>
               <Left>22.87935cm</Left>
