@@ -39,7 +39,7 @@
 					p.[Reporting Date 1], p.[Reporting Date 2], @Date_1, @Date_2) = CAST(1 AS BIT)
 					GROUP BY pur.[User ID])
 
-					SELECT [User ID] ,concat([First Name],' ',[Initials],' ',[Last Name]) [Full Name],u.Email,
+					SELECT [User ID] ,concat([Last Name],' ', ', ',[First Name]) [Full Name],u.Email,
 concat('Academic Rank '+u.[Academic Rank]+'&lt;br&gt;',
 --'Faculty Type '+u.[Faculty Type]+'&lt;br&gt;',
 'Home: '+u.[Home Department]+'&lt;br&gt;',
