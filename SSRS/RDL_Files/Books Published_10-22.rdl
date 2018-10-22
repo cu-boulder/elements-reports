@@ -30,7 +30,7 @@ SELECT @URL = G.[Website Base URL] FROM [Global Settings] G;
 DECLARE @publicationTypeID VARCHAR(100);
 SELECT @publicationTypeID = T.ID FROM [Publication Type]  T WHERE T.[Identifier name]='book'
 
-SELECT  CONCAT(U.[Last Name] + ',',' ' + U.Initials + '. ', U.[First Name]) Full_Name,
+SELECT  CONCAT(U.[Last Name] + ', ', U.[First Name]) Full_Name,
 		@URL + 'userprofile.html?uid=' + CAST(U.ID AS VARCHAR) User_URL,
 		U.[Home Department],
 		U.[Tenure Locus],
